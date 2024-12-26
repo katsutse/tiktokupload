@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Video</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Modern Styling -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        nav {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #007BFF;
+        }
+
+        .container {
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+            color: green;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div>
+            <a href="home.html">Home</a>
+            <a href="profile.html">Profile</a>
+            <a href="upload.html">Upload</a> <!-- Upload menu -->
+        </div>
+        <a href="home.html" class="logout-button" onclick="logout()">Logout</a>
+    </nav>
+
+    <!-- Upload Form -->
+    <div class="container">
+        <h1>Upload Video</h1>
+        <form id="uploadForm">
+            <input type="text" id="videoUrl" placeholder="Video URL" required>
+            <input type="text" id="channel" placeholder="Channel Name" required>
+            <input type="text" id="description" placeholder="Description" required>
+            <input type="text" id="song" placeholder="Song Name" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Check for token on page load
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Unauthorized. Please login.');
+            window.location.href = '/login.html';  // Redirect to login if no token
+        }
+
+        // Handle video upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            const channel = document.getElementById('channel').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const song = document.getElementById('song').value.trim();
+
+            const messageBox = document.getElementById('message');
+            messageBox.textContent = ''; // Clear any previous messages
+
+            try {
+                const res = await fetch('http://localhost:5000/upload-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`  // Send token with the request
+                    },
+                    body: JSON.stringify({ videoUrl, channel, description, song })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    messageBox.style.color = 'green';
+                    messageBox.textContent = 'Video uploaded successfully!';
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    messageBox.style.color = 'red';
+                    messageBox.textContent = data.message || 'Failed to upload video.';
+                }
+            } catch (err) {
+                messageBox.style.color = 'red';
+                messageBox.textContent = 'Server error. Try again.';
+                console.error(err);
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // Clear the token and any session data
+            localStorage.removeItem('token');
+            // Redirect to the home page
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>
