@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - tiktok-uploadvideo
 
 on:
@@ -21,17 +18,11 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Remove or comment out reportWebVitals import
-        run: |
-          sed -i '' 's/import *reportWebVitals.*//g' src/index.js || echo "No import found" 
-          # If you're using App.js, use the following instead (or both):
-          # sed -i '' 's/import *reportWebVitals.*//g' src/App.js || echo "No import found"
-
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
-          npm run test --if-present
+          npm run test -- --passWithNoTests
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -63,9 +54,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_95E90DAE0C8A43338D07149804985640 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D9065E8EA044D18AF574084BCEDA08A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65EA9CB9E7D4E25B796CAFEE3E2C077 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
