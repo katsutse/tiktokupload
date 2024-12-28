@@ -63,4 +63,13 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_95E90DAE0C8A43338D07149804985640 }}
-          tenant-id: ${{
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D9065E8EA044D18AF574084BCEDA08A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65EA9CB9E7D4E25B796CAFEE3E2C077 }}
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'tiktok-uploadvideo'
+          slot-name: 'Production'
+          package: .
