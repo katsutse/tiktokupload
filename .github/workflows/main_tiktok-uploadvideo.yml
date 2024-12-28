@@ -21,6 +21,12 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Remove or comment out reportWebVitals import
+        run: |
+          sed -i '' 's/import *reportWebVitals.*//g' src/index.js || echo "No import found" 
+          # If you're using App.js, use the following instead (or both):
+          # sed -i '' 's/import *reportWebVitals.*//g' src/App.js || echo "No import found"
+
       - name: npm install, build, and test
         run: |
           npm install
