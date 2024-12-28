@@ -21,16 +21,11 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the project
+      - name: npm install, build, and test
         run: |
-          npm run build --if-present || echo "Build step failed but continuing"
-          echo "Skipping errors for missing files like reportWebVitals"
-
-      - name: Run tests (if applicable)
-        run: npm run test --if-present || echo "Tests failed but continuing"
+          npm install
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -58,18 +53,17 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_95E90DAE0C8A43338D07149804985640 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D9065E8EA044D18AF574084BCEDA08A }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65EA9CB9E7D4E25B796CAFEE3E2C077 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'tiktok-uploadvideo'
-          slot-name: 'Production'
           package: .
