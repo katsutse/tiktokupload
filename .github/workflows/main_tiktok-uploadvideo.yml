@@ -31,7 +31,7 @@ jobs:
       - name: Prepare application for deployment
         run: |
           echo 'Ensure the server.js file and node_modules are included in the build'
-          zip -r release.zip ./* node_modules
+          zip -r release.zip ./*
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
