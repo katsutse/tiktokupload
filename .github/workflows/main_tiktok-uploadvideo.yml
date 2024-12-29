@@ -18,16 +18,18 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: npm install, build, and test
+      - name: Install dependencies and run tests
         run: |
           npm install
           npm run build --if-present
           npm run test -- --passWithNoTests
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      - name: Prepare application for deployment
+        run: |
+          echo 'Ensure the server.js file is included in the build'
+          zip release.zip ./* -r
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -58,9 +60,14 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D9065E8EA044D18AF574084BCEDA08A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65EA9CB9E7D4E25B796CAFEE3E2C077 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'tiktok-uploadvideo'
           package: .
+
+      - name: Start application
+        run: |
+          echo 'Starting application with node server.js'
+          node server.js
