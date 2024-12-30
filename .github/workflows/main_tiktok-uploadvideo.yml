@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - tiktok-uploadvideo
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,10 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
@@ -20,24 +21,36 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          npm install mongoose
+          npm install --legacy-peer-deps
+          npm install @azure/ai-text-analytics
+          npm install cors --save
+          npm install react-scripts --save
 
-      - name: Run build and tests (if applicable)
+      - name: List installed packages (debugging)
         run: |
-          npm run build --if-present
-          npm run test -- --passWithNoTests
+          echo "Listing installed packages:"
+          npm list cors
 
-      - name: Prepare application for deployment
+      - name: Build and test
         run: |
-          echo 'Ensure the server.js file and node_modules are included in the build'
-          zip -r release.zip ./*
+          echo "Running build process..."
+          npm run build --if-present || exit 1
+          echo "Build completed."
 
-      - name: Upload artifact for deployment
+      - name: Verify build directory
+        run: |
+          echo "Listing contents of the build directory:"
+          ls -R ./build || echo "Build directory not found!"
+
+      - name: Create ZIP file of build directory
+        run: |
+          zip -r build.zip ./build
+
+      - name: Upload ZIP artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: build.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,35 +59,27 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write  # This is required for requesting the JWT
 
     steps:
-      - name: Download artifact from build job
+      - name: Download ZIP artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
+      - name: Unzip the build artifact
+        run: |
+          unzip build.zip -d build
 
-      - name: Install dependencies on Azure
-        run: npm install
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_95E90DAE0C8A43338D07149804985640 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D9065E8EA044D18AF574084BCEDA08A }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65EA9CB9E7D4E25B796CAFEE3E2C077 }}
+      - name: Verify unzipped directory
+        run: |
+          echo "Listing contents of the unzipped build directory:"
+          ls -R build || echo "Unzipped build directory not found!"
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
         with:
-          app-name: 'tiktok-uploadvideo'
-          package: .
-
-      - name: Start application
-        run: |
-          echo 'Starting application with node server.js'
-          npm start
+          app-name: 'tikupload'
+          slot-name: 'Production'
+          package: ./build
