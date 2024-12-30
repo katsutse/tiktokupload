@@ -20,12 +20,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install   # Install dependencies including mongoose
+          echo "Installing project dependencies"
+          npm install   # Install all dependencies listed in package.json
+          npm install mongoose  # Explicitly install mongoose to avoid missing module issues
 
       - name: Prepare application for deployment
         run: |
-          echo 'Ensure the server.js file and node_modules are included in the build'
-          zip -r release.zip . -x '*.git*'  # Include node_modules in zip
+          echo "Preparing application for deployment"
+          zip -r release.zip . -x '*.git*'  # Ensure node_modules is included in zip
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
