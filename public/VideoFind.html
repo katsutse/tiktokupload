@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-evenly;
+        }
+        .video-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            padding: 15px;
+        }
+        .video-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .video-card h3 {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        .video-card p {
+            font-size: 1em;
+            color: #555;
+        }
+        video {
+            width: 100%;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Browse Videos</h1>
+
+    <div class="video-container" id="video-container">
+        <!-- Videos will be dynamically injected here -->
+    </div>
+
+    <script>
+        // Function to fetch videos from the server
+        async function fetchVideos() {
+            try {
+                const response = await fetch('http://localhost:5000/videos'); // Adjust the URL if necessary
+                if (!response.ok) {
+                    throw new Error('Failed to fetch videos');
+                }
+
+                const videos = await response.json();
+                const videoContainer = document.getElementById('video-container');
+
+                // Clear any existing videos
+                videoContainer.innerHTML = '';
+
+                // Loop through videos and display them
+                videos.forEach(video => {
+                    const videoCard = document.createElement('div');
+                    videoCard.classList.add('video-card');
+
+                    // Adding video content
+                    videoCard.innerHTML = `
+                        <video controls>
+                            <source src="${video.url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <h3>${video.channel}</h3>
+                        <p>${video.description}</p>
+                        <p><strong>Song:</strong> ${video.song}</p>
+                    `;
+
+                    // Append the video card to the container
+                    videoContainer.appendChild(videoCard);
+                });
+            } catch (error) {
+                console.error('Error fetching videos:', error);
+            }
+        }
+
+        // Fetch videos when the page loads
+        window.onload = fetchVideos;
+    </script>
+
+</body>
+</html>
