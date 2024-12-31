@@ -1,18 +1,22 @@
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB URI
-const mongoURI = process.env.MONGO_URI;
+// Hardcoded MongoDB URI and JWT Secret
+const mongoURI =
+  'mongodb://tiktok-app-server:TaUCoAnBUP6AAVsaMGwTgBbfERfwZqZU9EHKQuORVeUwaY5KMXrc9ZpX3wmBTPTkzxnYchxSPtNSACDb0WvLUw==@tiktok-app-server.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@tiktok-app-server@';
+const jwtSecret = 'your_jwt_secret_here';
+
+// MongoDB Connection
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
@@ -63,7 +67,7 @@ const jwtMiddleware = (req, res, next) => {
     return res.status(401).json({ message: 'No token provided' });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded;
     next();
   } catch (err) {
@@ -95,7 +99,7 @@ app.post('/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    const token = jwt.sign({ username: user.username, userId: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ username: user.username, userId: user._id }, jwtSecret, {
       expiresIn: '1h',
     });
     res.json({ success: true, message: 'Login successful', username: user.username, token });
@@ -171,5 +175,5 @@ app.post('/analyze-feedback', jwtMiddleware, async (req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
