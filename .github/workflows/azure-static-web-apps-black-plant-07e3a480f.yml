@@ -32,9 +32,12 @@ jobs:
           output_location: "build" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
-      - name: Add custom route to home.html
+      - name: Create custom route to home.html
         run: |
+          # Ensure build directory exists
           mkdir -p build/.well-known
+          
+          # Add custom routing
           echo '{
             "routes": [
               {
@@ -43,6 +46,9 @@ jobs:
               }
             ]
           }' > build/.well-known/routes.json
+          
+          # Set permissions (optional but should help with any permission issues)
+          sudo chmod -R 777 build/.well-known
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
